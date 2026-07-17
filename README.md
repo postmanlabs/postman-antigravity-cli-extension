@@ -40,7 +40,7 @@ If you prefer API key authentication, add an `Authorization` header to the serve
 {
   "mcpServers": {
     "postman": {
-      "url": "https://mcp.postman.com/minimal",
+      "serverUrl": "https://mcp.postman.com/minimal",
       "headers": {
         "Authorization": "Bearer $POSTMAN_API_KEY"
       }
@@ -97,7 +97,7 @@ If your Postman account is in the EU region, use the EU endpoint in `mcp_config.
 {
   "mcpServers": {
     "postman": {
-      "url": "https://mcp.eu.postman.com/minimal",
+      "serverUrl": "https://mcp.eu.postman.com/minimal",
       "headers": {
         "Authorization": "Bearer $POSTMAN_API_KEY"
       }
