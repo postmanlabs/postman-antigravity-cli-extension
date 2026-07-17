@@ -59,7 +59,7 @@ Add the `export` line to your `~/.zshrc` or `~/.bashrc` to persist it across ses
 
 ## Slash commands
 
-The plugin ships four `/postman:*` commands (defined in `commands/postman/*.toml`):
+The plugin ships eleven `/postman:*` commands (defined in `commands/postman/*.toml`):
 
 | Command | What it does |
 |---------|--------------|
@@ -67,6 +67,15 @@ The plugin ships four `/postman:*` commands (defined in `commands/postman/*.toml
 | `/postman:sync` | Update the collection to reflect the current API code, then re-run tests |
 | `/postman:run` | Run the project's collection and show test results by endpoint |
 | `/postman:generate <spec>` | Generate a collection from an OpenAPI spec file |
+| `/postman:test [collection]` | Run collection tests, diagnose failures, and suggest fixes |
+| `/postman:search <question>` | Discover APIs across your workspaces and the public network |
+| `/postman:mock [source]` | Create a mock server from a collection or spec (auto-generates examples) |
+| `/postman:docs [source]` | Generate, improve, and publish API documentation |
+| `/postman:security [source]` | Audit an API against the OWASP API Top 10 |
+| `/postman:learn <question>` | Search the Postman Learning Center for how-to guidance (Full mode) |
+| `/postman:send-request [req]` | Send an HTTP request via the Postman CLI |
+
+> `/postman:learn` needs the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` needs the Postman CLI installed. The `code` toolset powers richer client-code generation.
 
 Agent guidance (collection-schema rules, workflow patterns, troubleshooting) is loaded on demand from `skills/postman/SKILL.md`.
 

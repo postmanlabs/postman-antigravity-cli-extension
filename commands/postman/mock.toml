@@ -1,0 +1,50 @@
+description = "Create a Postman mock server from a collection or spec. Generates missing examples and returns a mock URL. Usage: /postman:mock [collection or spec]"
+
+prompt = """
+Spin up a Postman mock server from a collection or spec. Return a working mock URL for frontend development, integration testing, or demos.
+
+Source (optional): {{args}}
+
+## Prerequisites
+
+The Postman MCP Server must be connected. If MCP tools aren't available, tell the user: "Run /postman:setup to configure the Postman MCP Server."
+
+## Workflow
+
+### Step 1: Find the Source
+Call `getWorkspaces` to get the workspace ID (ask which if multiple).
+- **From existing collection:** call `getCollections` with the `workspace` parameter and select the target.
+- **From local spec:** find the OpenAPI spec, then import it — call `createSpec` (`workspaceId`, `name`, `type`, `files`), then `generateCollection`. **Async (HTTP 202):** poll `getGeneratedCollectionSpecs` or `getSpecCollections` with increasing waits (2s, 4s, 8s). `getAsyncSpecTaskStatus` may return 403 on some plans.
+
+### Step 2: Check for Examples
+Mock servers serve example responses. Call `getCollection` and check whether requests have saved responses. For each request without examples: call `getCollectionRequest` for the schema, generate a realistic example response, then `createCollectionResponse` to save it.
+
+### Step 3: Check for Existing Mocks
+Before creating a new mock, call `getMocks`. If one exists for this collection, call `getMock` for its URL and present it. Only create a new mock if none exists or the user wants a new one.
+
+### Step 4: Create Mock Server
+Call `createMock` with: workspace ID; collection UID in `ownerId-collectionId` format (from `getCollection`'s `uid`); environment ID (if applicable); name `<api-name> Mock`; private false (or true if preferred).
+
+### Step 5: Present Mock URL
+```
+Mock server created: "Pet Store API Mock"
+  URL: https://<mock-id>.mock.pstmn.io
+  Try it:
+    curl https://<mock-id>.mock.pstmn.io/pets
+  The mock serves example responses from your collection.
+```
+
+### Step 6: Integration
+Offer a quick integration snippet (e.g. set `API_BASE_URL=https://<mock-id>.mock.pstmn.io` in the project `.env` or frontend config).
+
+### Step 7: Publish (optional)
+If the user wants the mock public: call `publishMock` (no auth required — good for demos); `unpublishMock` to make it private again.
+
+## Error Handling
+
+- **MCP not configured:** "Run /postman:setup to configure the Postman MCP Server."
+- **No examples in collection:** Auto-generate from schemas (Step 2). If no schemas either, ask the user for sample responses.
+- **401 Unauthorized:** "Your Postman API key was rejected. Generate a new one at https://go.postman.co/settings/me/api-keys and run /postman:setup."
+- **MCP timeout:** Retry once; if it still fails, check https://status.postman.com.
+- **Plan limitations:** "Mock server creation may require a Postman Basic plan or higher."
+"""
