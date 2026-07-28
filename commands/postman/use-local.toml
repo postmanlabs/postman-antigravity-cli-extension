@@ -1,0 +1,47 @@
+description = "Switch this plugin's Postman MCP server to LOCAL (stdio via the npx package). Usage: /postman:use-local [minimal|code|full]"
+
+prompt = """
+Switch the Postman MCP server for this plugin from the remote hosted server to the LOCAL stdio package (`@postman/postman-mcp-server`, run via `npx`) by rewriting the plugin's own `mcp_config.json` in place.
+
+Requested toolset mode (optional — one of `minimal`, `code`, `full`; default: `minimal`): {{args}}
+
+## Step 1 — Locate this plugin's mcp_config.json
+!{found=""; for root in "$HOME/.gemini/config/plugins" "$HOME/.agents/plugins" "$PWD/.agents/plugins"; do [ -d "$root" ] || continue; for f in "$root"/*/mcp_config.json; do [ -f "$f" ] || continue; if grep -q '"postman"' "$f"; then echo "FOUND: $f"; echo "--- current content ---"; cat "$f"; echo; found=1; fi; done; done; [ -z "$found" ] && echo "(No plugin mcp_config.json found. Run 'agy plugin list' and ask the user which plugin directory to edit.)"}
+
+Use the `FOUND:` path above as the target file to edit. If no `FOUND:` line appeared, stop and ask the user for the path to the installed plugin's `mcp_config.json`.
+
+## Step 2 — Verify the API key
+The local server authenticates with a Postman API key read from the environment (there is no OAuth for the local package).
+!{if [ -n "$POSTMAN_API_KEY" ]; then echo "POSTMAN_API_KEY is set in this environment ✅"; else echo "POSTMAN_API_KEY is NOT set ❌"; fi}
+
+If it is not set, tell the user to run `export POSTMAN_API_KEY=<their-key>` and add that line to `~/.zshrc` or `~/.bashrc` so it persists, then to restart the shell before continuing. They can get a key at https://postman.postman.co/settings/me/api-keys. Never hardcode the key into the file — it is read from the environment.
+
+## Step 3 — Pick the toolset flag from the requested mode
+- `minimal` (default): no mode flag
+- `code`: add `"--code"` to `args`
+- `full`: add `"--full"` to `args`
+
+If the user's Postman account is in the EU region, also add `"--region", "eu"` to `args`.
+
+## Step 4 — Overwrite the target mcp_config.json
+Write EXACTLY this content to the `FOUND:` path, inserting the mode/region flags from Step 3 into `args` (for `minimal`, add no mode flag):
+
+```json
+{
+  "mcpServers": {
+    "postman": {
+      "command": "npx",
+      "args": ["-y", "@postman/postman-mcp-server@latest"],
+      "env": {
+        "POSTMAN_API_KEY": "$POSTMAN_API_KEY"
+      }
+    }
+  }
+}
+```
+
+The `$POSTMAN_API_KEY` reference is expanded by Antigravity from your environment (the same pattern the remote `headers` config uses); the spawned stdio process also inherits your shell environment.
+
+## Step 5 — Confirm and restart
+Print the new file content back to the user, then tell them to **restart the `agy` session** (or reload servers via *Additional Options (…) → MCP Servers*) for the change to take effect. Remind them they can switch back to the hosted server at any time with `/postman:use-remote`.
+"""
