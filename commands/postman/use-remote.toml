@@ -1,23 +1,30 @@
-description = "Switch this plugin's Postman MCP server to the REMOTE hosted server (OAuth). Usage: /postman:use-remote [minimal|code|full|learn]"
+description = "Switch this plugin's Postman MCP server to the REMOTE hosted server (OAuth), keeping the current toolset. Usage: /postman:use-remote [minimal|code|full|learn]"
 
 prompt = """
-Switch the Postman MCP server for this plugin from the local stdio package back to Postman's REMOTE hosted server (authenticated via OAuth — no API key required) by rewriting the plugin's own `mcp_config.json` in place.
+Switch the Postman MCP server for this plugin from the local stdio package back to Postman's REMOTE hosted server (authenticated via OAuth — no API key required) by rewriting the plugin's own `mcp_config.json` in place. **Keep whatever toolset is already configured** — only change the transport (local → remote), not the toolset, unless the user explicitly asks for a different one.
 
-Requested toolset mode (optional — one of `minimal`, `code`, `full`, `learn`; default: `minimal`): {{args}}
+Optional toolset override (leave empty to keep the current toolset; one of `minimal`, `code`, `full`, `learn`): {{args}}
 
 ## Step 1 — Locate this plugin's mcp_config.json
 !{found=""; for root in "$HOME/.gemini/config/plugins" "$HOME/.agents/plugins" "$PWD/.agents/plugins"; do [ -d "$root" ] || continue; for f in "$root"/*/mcp_config.json; do [ -f "$f" ] || continue; if grep -q '"postman"' "$f"; then echo "FOUND: $f"; echo "--- current content ---"; cat "$f"; echo; found=1; fi; done; done; [ -z "$found" ] && echo "(No plugin mcp_config.json found. Run 'agy plugin list' and ask the user which plugin directory to edit.)"}
 
 Use the `FOUND:` path above as the target file to edit. If no `FOUND:` line appeared, stop and ask the user for the path to the installed plugin's `mcp_config.json`.
 
-## Step 2 — Pick the endpoint from the requested mode
-- `minimal` (default): `https://mcp.postman.com/minimal`
+## Step 2 — Determine the current toolset (preserve it)
+Inspect the current content printed in Step 1 and read off which toolset it is already using:
+- **Local form** (`command`/`args`): the flag in `args` is the toolset — `--code` → `code`, `--full` → `full`, `--learn` → `learn`, no mode flag → `minimal`.
+- **Remote form** (`serverUrl`): the URL path is the toolset — `/code` → `code`, `/mcp` → `full`, `/learn` → `learn`, `/minimal` (or any other) → `minimal`.
+
+**If the user passed an override in `{{args}}`, use that instead.** Otherwise use the detected toolset. If the current content is missing/unreadable and no override was given, default to `minimal` and say so.
+
+## Step 3 — Pick the endpoint from the toolset
+- `minimal`: `https://mcp.postman.com/minimal`
 - `code`: `https://mcp.postman.com/code`
 - `full`: `https://mcp.postman.com/mcp`
 - `learn`: `https://mcp.postman.com/learn`
 
-## Step 3 — Overwrite the target mcp_config.json
-Write EXACTLY this content to the `FOUND:` path (substitute the URL chosen in Step 2):
+## Step 4 — Overwrite the target mcp_config.json
+Write EXACTLY this content to the `FOUND:` path (substitute the URL chosen in Step 3):
 
 ```json
 {
@@ -42,6 +49,6 @@ Write EXACTLY this content to the `FOUND:` path (substitute the URL chosen in St
 }
 ```
 
-## Step 4 — Confirm and restart
-Print the new file content back to the user, then tell them to **restart the `agy` session** (or reload servers via *Additional Options (…) → MCP Servers*). On first use, Antigravity opens a browser window to complete the Postman OAuth login (US region). Remind them they can switch to the local package at any time with `/postman:use-local`.
+## Step 5 — Confirm and restart
+Print the new file content back to the user and state which toolset was kept (or which override was applied), then tell them to **restart the `agy` session** (or reload servers via *Additional Options (…) → MCP Servers*). On first use, Antigravity opens a browser window to complete the Postman OAuth login (US region). Remind them they can switch to the local package at any time with `/postman:use-local`.
 """

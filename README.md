@@ -98,8 +98,8 @@ The same plugin can talk to either Postman's **hosted (remote)** MCP server or t
 
 | Command | Result |
 |---------|--------|
-| `/postman:use-remote [minimal\|code\|full\|learn]` | Points `serverUrl` at the hosted server (OAuth; US region). Default mode: `minimal`. |
-| `/postman:use-local  [minimal\|code\|full\|learn]` | Replaces the entry with a local `npx` stdio server reading `POSTMAN_API_KEY` from your environment. Default mode: `minimal`. |
+| `/postman:use-remote [minimal\|code\|full\|learn]` | Points `serverUrl` at the hosted server (OAuth; US region), keeping your current toolset. The `[mode]` arg is an optional override. |
+| `/postman:use-local  [minimal\|code\|full\|learn]` | Replaces the entry with a local `npx` stdio server reading `POSTMAN_API_KEY` from your environment, keeping your current toolset. The `[mode]` arg is an optional override. |
 
 After running either command, **restart the `agy` session** (or reload servers via *Additional Options (…) → MCP Servers*) so Antigravity re-reads the config.
 
@@ -134,7 +134,7 @@ Running `/postman:use-local` produces a config equivalent to:
 }
 ```
 
-The `[mode]` argument maps to the server's toolset flag — `code` → `--code`, `full` → `--full`, `learn` → `--learn`, `minimal` (default) → no flag. Add `"--region", "eu"` to `args` for an EU account (`/postman:use-local` will do this when you tell it the account is EU).
+By default the command keeps whatever toolset is already configured — it only switches the transport. Passing the optional `[mode]` argument overrides the toolset, mapping to the server's flag: `code` → `--code`, `full` → `--full`, `learn` → `--learn`, `minimal` → no flag. Add `"--region", "eu"` to `args` for an EU account (`/postman:use-local` will do this when you tell it the account is EU).
 
 ### Shipping a local-only build
 
