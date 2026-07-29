@@ -59,7 +59,7 @@ Add the `export` line to your `~/.zshrc` or `~/.bashrc` to persist it across ses
 
 ## Slash commands
 
-The plugin ships eleven `/postman:*` commands (defined in `commands/postman/*.toml`):
+The plugin ships thirteen `/postman:*` commands (defined in `commands/postman/*.toml`):
 
 | Command | What it does |
 |---------|--------------|
@@ -72,10 +72,12 @@ The plugin ships eleven `/postman:*` commands (defined in `commands/postman/*.to
 | `/postman:mock [source]` | Create a mock server from a collection or spec (auto-generates examples) |
 | `/postman:docs [source]` | Generate, improve, and publish API documentation |
 | `/postman:security [source]` | Audit an API against the OWASP API Top 10 |
-| `/postman:learn <question>` | Search the Postman Learning Center for how-to guidance (Full mode) |
+| `/postman:learn <question>` | Search the Postman Learning Center for how-to guidance (Learn mode) |
 | `/postman:send-request [req]` | Send an HTTP request via the Postman CLI |
+| `/postman:use-local [mode]` | Switch this plugin's server to the local stdio package (`npx`) — see [Local vs. remote](#local-vs-remote-server) |
+| `/postman:use-remote [mode]` | Switch this plugin's server back to the hosted server (OAuth) — see [Local vs. remote](#local-vs-remote-server) |
 
-> `/postman:learn` needs the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` needs the Postman CLI installed. The `code` toolset powers richer client-code generation.
+> `/postman:learn` needs the **Learn** endpoint (`mcp.postman.com/learn`) or the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` needs the Postman CLI installed. The `code` toolset powers richer client-code generation.
 
 Agent guidance (collection-schema rules, workflow patterns, troubleshooting) is loaded on demand from `skills/postman/SKILL.md`.
 
@@ -88,6 +90,60 @@ This extension uses the **minimal** toolset by default — fast, focused access 
 | Minimal (default) | `https://mcp.postman.com/minimal` | Collections, workspaces, environments, specs |
 | Full | `https://mcp.postman.com/mcp` | 100+ tools, advanced collaboration, Enterprise |
 | Code | `https://mcp.postman.com/code` | API search and client code generation |
+| Learn | `https://mcp.postman.com/learn` | Search Postman Docs / Learning Center for guides and concepts |
+
+## Local vs. remote server
+
+The same plugin can talk to either Postman's **hosted (remote)** MCP server or the **local** stdio package (`@postman/postman-mcp-server`, run through `npx`). You don't have to hand-edit `mcp_config.json` or install a second plugin to switch — two slash commands rewrite this plugin's own `mcp_config.json` in place:
+
+| Command | Result |
+|---------|--------|
+| `/postman:use-remote [minimal\|code\|full\|learn]` | Points `serverUrl` at the hosted server (OAuth; US region). Default mode: `minimal`. |
+| `/postman:use-local  [minimal\|code\|full\|learn]` | Replaces the entry with a local `npx` stdio server reading `POSTMAN_API_KEY` from your environment. Default mode: `minimal`. |
+
+After running either command, **restart the `agy` session** (or reload servers via *Additional Options (…) → MCP Servers*) so Antigravity re-reads the config.
+
+### When to use local
+
+The local package runs the MCP server as a subprocess on your machine instead of calling Postman's hosted endpoint. Prefer it when you want to pin a specific server version, run fully offline against the package, or avoid the browser-based OAuth flow in headless/CI environments.
+
+**Prerequisites**
+
+- **Node.js / `npx`** available on your `PATH` (`npx` fetches `@postman/postman-mcp-server@latest` on first run).
+- **`POSTMAN_API_KEY`** exported in your environment — the local package has no OAuth, so it authenticates with an API key:
+
+  ```bash
+  export POSTMAN_API_KEY=your-api-key-here   # add to ~/.zshrc or ~/.bashrc to persist
+  ```
+
+  Get a key at [postman.postman.co/settings/me/api-keys](https://postman.postman.co/settings/me/api-keys). The spawned stdio process inherits your shell environment; the `$POSTMAN_API_KEY` reference in the config is also expanded by Antigravity. Never hardcode the key into `mcp_config.json`.
+
+Running `/postman:use-local` produces a config equivalent to:
+
+```json
+{
+  "mcpServers": {
+    "postman": {
+      "command": "npx",
+      "args": ["-y", "@postman/postman-mcp-server@latest"],
+      "env": {
+        "POSTMAN_API_KEY": "$POSTMAN_API_KEY"
+      }
+    }
+  }
+}
+```
+
+The `[mode]` argument maps to the server's toolset flag — `code` → `--code`, `full` → `--full`, `learn` → `--learn`, `minimal` (default) → no flag. Add `"--region", "eu"` to `args` for an EU account (`/postman:use-local` will do this when you tell it the account is EU).
+
+### Shipping a local-only build
+
+If you'd rather distribute a plugin that is local from the moment it's installed (no toggle needed), publish a variant of this repo whose `mcp_config.json` is the stdio form shown above. It installs with the same one-liner — the only extra requirement is that `POSTMAN_API_KEY` is exported before use:
+
+```bash
+export POSTMAN_API_KEY=your-api-key-here
+agy plugin install https://github.com/<owner>/<local-variant-repo>
+```
 
 ## EU Region
 
