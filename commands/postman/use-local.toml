@@ -1,9 +1,9 @@
-description = "Switch this plugin's Postman MCP server to LOCAL (stdio via the npx package). Usage: /postman:use-local [minimal|code|full]"
+description = "Switch this plugin's Postman MCP server to LOCAL (stdio via the npx package). Usage: /postman:use-local [minimal|code|full|learn]"
 
 prompt = """
 Switch the Postman MCP server for this plugin from the remote hosted server to the LOCAL stdio package (`@postman/postman-mcp-server`, run via `npx`) by rewriting the plugin's own `mcp_config.json` in place.
 
-Requested toolset mode (optional — one of `minimal`, `code`, `full`; default: `minimal`): {{args}}
+Requested toolset mode (optional — one of `minimal`, `code`, `full`, `learn`; default: `minimal`): {{args}}
 
 ## Step 1 — Locate this plugin's mcp_config.json
 !{found=""; for root in "$HOME/.gemini/config/plugins" "$HOME/.agents/plugins" "$PWD/.agents/plugins"; do [ -d "$root" ] || continue; for f in "$root"/*/mcp_config.json; do [ -f "$f" ] || continue; if grep -q '"postman"' "$f"; then echo "FOUND: $f"; echo "--- current content ---"; cat "$f"; echo; found=1; fi; done; done; [ -z "$found" ] && echo "(No plugin mcp_config.json found. Run 'agy plugin list' and ask the user which plugin directory to edit.)"}
@@ -20,6 +20,7 @@ If it is not set, tell the user to run `export POSTMAN_API_KEY=<their-key>` and 
 - `minimal` (default): no mode flag
 - `code`: add `"--code"` to `args`
 - `full`: add `"--full"` to `args`
+- `learn`: add `"--learn"` to `args`
 
 If the user's Postman account is in the EU region, also add `"--region", "eu"` to `args`.
 

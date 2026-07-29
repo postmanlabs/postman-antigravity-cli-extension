@@ -72,12 +72,12 @@ The plugin ships thirteen `/postman:*` commands (defined in `commands/postman/*.
 | `/postman:mock [source]` | Create a mock server from a collection or spec (auto-generates examples) |
 | `/postman:docs [source]` | Generate, improve, and publish API documentation |
 | `/postman:security [source]` | Audit an API against the OWASP API Top 10 |
-| `/postman:learn <question>` | Search the Postman Learning Center for how-to guidance (Full mode) |
+| `/postman:learn <question>` | Search the Postman Learning Center for how-to guidance (Learn mode) |
 | `/postman:send-request [req]` | Send an HTTP request via the Postman CLI |
 | `/postman:use-local [mode]` | Switch this plugin's server to the local stdio package (`npx`) — see [Local vs. remote](#local-vs-remote-server) |
 | `/postman:use-remote [mode]` | Switch this plugin's server back to the hosted server (OAuth) — see [Local vs. remote](#local-vs-remote-server) |
 
-> `/postman:learn` needs the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` needs the Postman CLI installed. The `code` toolset powers richer client-code generation.
+> `/postman:learn` needs the **Learn** endpoint (`mcp.postman.com/learn`) or the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` needs the Postman CLI installed. The `code` toolset powers richer client-code generation.
 
 Agent guidance (collection-schema rules, workflow patterns, troubleshooting) is loaded on demand from `skills/postman/SKILL.md`.
 
@@ -90,6 +90,7 @@ This extension uses the **minimal** toolset by default — fast, focused access 
 | Minimal (default) | `https://mcp.postman.com/minimal` | Collections, workspaces, environments, specs |
 | Full | `https://mcp.postman.com/mcp` | 100+ tools, advanced collaboration, Enterprise |
 | Code | `https://mcp.postman.com/code` | API search and client code generation |
+| Learn | `https://mcp.postman.com/learn` | Search Postman Docs / Learning Center for guides and concepts |
 
 ## Local vs. remote server
 
@@ -97,8 +98,8 @@ The same plugin can talk to either Postman's **hosted (remote)** MCP server or t
 
 | Command | Result |
 |---------|--------|
-| `/postman:use-remote [minimal\|code\|full]` | Points `serverUrl` at the hosted server (OAuth; US region). Default mode: `minimal`. |
-| `/postman:use-local  [minimal\|code\|full]` | Replaces the entry with a local `npx` stdio server reading `POSTMAN_API_KEY` from your environment. Default mode: `minimal`. |
+| `/postman:use-remote [minimal\|code\|full\|learn]` | Points `serverUrl` at the hosted server (OAuth; US region). Default mode: `minimal`. |
+| `/postman:use-local  [minimal\|code\|full\|learn]` | Replaces the entry with a local `npx` stdio server reading `POSTMAN_API_KEY` from your environment. Default mode: `minimal`. |
 
 After running either command, **restart the `agy` session** (or reload servers via *Additional Options (…) → MCP Servers*) so Antigravity re-reads the config.
 
@@ -133,7 +134,7 @@ Running `/postman:use-local` produces a config equivalent to:
 }
 ```
 
-The `[mode]` argument maps to the server's toolset flag — `code` → `--code`, `full` → `--full`, `minimal` (default) → no flag. Add `"--region", "eu"` to `args` for an EU account (`/postman:use-local` will do this when you tell it the account is EU).
+The `[mode]` argument maps to the server's toolset flag — `code` → `--code`, `full` → `--full`, `learn` → `--learn`, `minimal` (default) → no flag. Add `"--region", "eu"` to `args` for an EU account (`/postman:use-local` will do this when you tell it the account is EU).
 
 ### Shipping a local-only build
 
