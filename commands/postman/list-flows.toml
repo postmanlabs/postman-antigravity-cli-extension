@@ -1,0 +1,27 @@
+description = "List Postman Flows in a workspace and resolve a flow name to its 24-character ID, using the Postman CLI. Usage: /postman:list-flows <workspace-id> [name filter]"
+
+prompt = """
+List Postman Flows in a workspace using the Postman CLI (`postman`), and resolve a flow name to its 24-character ID when another Flow command needs it. Requires the Postman CLI to be installed and available on PATH, with an active `postman login` session.
+
+Workspace ID and/or a name to filter by (optional): {{args}}
+
+## Step 1: Determine the Workspace
+Use the workspace ID from the arguments above or from `.postman.json`. If you don't have one, ask the user which workspace to list.
+
+## Step 2: List Flows
+```bash
+POSTMAN_CLI_SOURCE=antigravity-cli-extension postman flows list --workspace <workspaceId>
+```
+- Narrow with `--filter "<name>"` when resolving a specific flow.
+- Use `--sort name` and `--paginate` as needed for large workspaces.
+
+## Step 3: Report
+Report each flow's **name + ID** (and recent status where the CLI shows it). When you're resolving a name for another command, return the single matching 24-character ID. On multiple matches, present the candidates and ask the user to choose — never guess.
+
+Read-only: no confirmation needed. Reuse the existing `postman login` credentials — never authenticate twice.
+
+## Error Handling
+- **Postman CLI not installed / not on PATH:** "This command needs the Postman CLI. Install it (https://learning.postman.com/docs/postman-cli/postman-cli-installation/) and run `postman login`, then retry."
+- **Not logged in:** "Run `postman login` first, then retry."
+- **No flows found:** Confirm the workspace ID, or relax the `--filter` term.
+"""

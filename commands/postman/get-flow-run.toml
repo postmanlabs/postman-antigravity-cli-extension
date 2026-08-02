@@ -1,0 +1,28 @@
+description = "Inspect a Postman Flow run by its Run ID using the Postman CLI — per-block logs, the failing block, and status. Usage: /postman:get-flow-run <run-id> [block-id]"
+
+prompt = """
+Inspect a specific Postman Flow run using the Postman CLI (`postman`). Read-only. Requires the Postman CLI to be installed and available on PATH, with an active `postman login` session.
+
+Run ID (the `x-run-id` that /postman:trigger-flow reported) and optionally a block ID to focus on: {{args}}
+
+## Step 1: Take the Run ID
+Use the Run ID from the arguments above. Ask for it if it's missing.
+
+## Step 2: Fetch the Run
+Run a summary first, then add `--logs` for per-block detail:
+```bash
+POSTMAN_CLI_SOURCE=antigravity-cli-extension postman flows get-run --run-id <runId>
+POSTMAN_CLI_SOURCE=antigravity-cli-extension postman flows get-run --run-id <runId> --logs
+```
+Narrow to a single block with `--filter <blockId>`.
+
+## Step 3: Report
+Report the **run status** and **which block failed and why**, with the relevant per-block log output.
+
+Read-only: no confirmation needed. Reuse the existing `postman login` credentials — never authenticate twice.
+
+## Error Handling
+- **Postman CLI not installed / not on PATH:** "This command needs the Postman CLI. Install it (https://learning.postman.com/docs/postman-cli/postman-cli-installation/) and run `postman login`, then retry."
+- **Not logged in:** "Run `postman login` first, then retry."
+- **Run not found:** Confirm the Run ID from the /postman:trigger-flow output, or re-trigger to get a fresh one.
+"""

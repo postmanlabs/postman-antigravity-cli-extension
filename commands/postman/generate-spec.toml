@@ -1,0 +1,62 @@
+description = "Generate or update an OpenAPI 3.0 spec by analyzing the API routes in your codebase, then optionally sync it to Postman. Usage: /postman:generate-spec [path or framework hint]"
+
+prompt = """
+Generate or update an OpenAPI 3.0 specification by analyzing the API routes in this project's codebase, then optionally push it to Postman.
+
+Optional hint (a path to scan, a framework name, or an existing spec file): {{args}}
+
+## Prerequisites
+
+Spec generation and local analysis work without MCP. Pushing the spec to Postman (`createSpec` / `syncCollectionWithSpec`) needs the Postman MCP Server connected — if MCP tools aren't available, tell the user: "Run /postman:setup to configure the Postman MCP Server."
+
+## Workflow
+
+### Step 1: Check for an Existing Spec
+Look for a spec already in the project so you update it rather than replace it:
+!{ls postman/specs/**/*.yaml postman/specs/**/*.yml postman/specs/**/*.json openapi.yaml openapi.yml swagger.yaml swagger.yml 2>/dev/null || echo "No existing spec found."}
+If one exists, read it to understand the current state.
+
+### Step 2: Discover API Endpoints
+Scan the project for route definitions based on the framework:
+- **Express/Node:** `app.get()`, `router.post()`, `@Get()` (NestJS)
+- **Python:** `@app.route()`, `@router.get()` (FastAPI), `path()` (Django)
+- **Go:** `http.HandleFunc()`, `r.GET()` (Gin/Echo)
+- **Java:** `@GetMapping`, `@PostMapping`, `@RequestMapping`
+- **Ruby:** `get`, `post`, `resources` in routes.rb
+
+Read the route files and extract methods, paths, parameters, request bodies, response schemas, and auth requirements.
+
+### Step 3: Generate or Update the Spec
+Write a valid OpenAPI 3.0.3 spec including:
+- `info` with title, version, description
+- `servers` with the local dev URL
+- `paths` for every discovered endpoint
+- `components/schemas` derived from code models (types, structs, classes)
+- `components/securitySchemes` if auth is used
+
+- **When updating:** add new endpoints, update changed ones, remove endpoints no longer in code, and preserve existing descriptions and examples.
+- **When creating:** write to `postman/specs/openapi.yaml`.
+
+### Step 4: Validate
+Lint the spec and fix errors until it is clean. If the Postman CLI is installed:
+```bash
+postman spec lint ./postman/specs/openapi.yaml
+```
+
+### Step 5: Sync to Postman (optional)
+Offer to push the spec to Postman via MCP:
+- `createSpec` (type `OPENAPI:3.0`, `files` array with the spec path + content) to create it, then `generateCollection` if the user also wants a collection, or
+- `syncSpecWithCollection` / `syncCollectionWithSpec` to reconcile an existing spec and collection (this is what /postman:sync does).
+
+Save any returned spec ID to `.postman.json`.
+
+### Step 6: Report
+Show what changed: endpoints documented (count + list), schemas defined, the diff from the previous spec (if updating), and the validation result.
+
+## Error Handling
+
+- **MCP not configured:** Local spec generation still works. For Postman sync: "Run /postman:setup to configure the Postman MCP Server."
+- **401 Unauthorized:** "Your Postman API key was rejected. Generate a new one at https://go.postman.co/settings/me/api-keys and run /postman:setup."
+- **No routes found:** Ask the user which directory or framework to scan.
+- **Invalid spec:** Report the lint errors and fix common YAML/JSON syntax issues, then re-lint.
+"""

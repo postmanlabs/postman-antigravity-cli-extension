@@ -59,14 +59,14 @@ Add the `export` line to your `~/.zshrc` or `~/.bashrc` to persist it across ses
 
 ## Slash commands
 
-The plugin ships thirteen `/postman:*` commands (defined in `commands/postman/*.toml`):
+The plugin ships seventeen `/postman:*` commands (defined in `commands/postman/*.toml`) — the canonical command set shared with the Postman Claude Code and Cursor plugins:
 
 | Command | What it does |
 |---------|--------------|
 | `/postman:setup` | Initialize a Postman workspace, collection, and environment for the current project |
 | `/postman:sync` | Update the collection to reflect the current API code, then re-run tests |
-| `/postman:run` | Run the project's collection and show test results by endpoint |
-| `/postman:generate <spec>` | Generate a collection from an OpenAPI spec file |
+| `/postman:run-collection` | Run the project's collection and show test results by endpoint |
+| `/postman:generate-spec [path]` | Generate or update an OpenAPI 3.0 spec from your codebase, then optionally sync it to Postman |
 | `/postman:test [collection]` | Run collection tests, diagnose failures, and suggest fixes |
 | `/postman:search <question>` | Discover APIs across your workspaces and the public network |
 | `/postman:mock [source]` | Create a mock server from a collection or spec (auto-generates examples) |
@@ -74,10 +74,14 @@ The plugin ships thirteen `/postman:*` commands (defined in `commands/postman/*.
 | `/postman:security [source]` | Audit an API against the OWASP API Top 10 |
 | `/postman:learn <question>` | Search the Postman Learning Center for how-to guidance (Learn mode) |
 | `/postman:send-request [req]` | Send an HTTP request via the Postman CLI |
+| `/postman:list-flows <workspace>` | List Postman Flows in a workspace and resolve a flow name to its ID (Postman CLI) |
+| `/postman:trigger-flow <flow>` | Trigger a deployed Flow with inputs; offers to deploy-then-trigger (Postman CLI) |
+| `/postman:deploy-flow <flow>` | Deploy a Flow so it becomes triggerable, confirming a trigger path first (Postman CLI) |
+| `/postman:get-flow-run <run-id>` | Inspect a Flow run — per-block logs, the failing block, and status (Postman CLI) |
 | `/postman:use-local [mode]` | Switch this plugin's server to the local stdio package (`npx`) — see [Local vs. remote](#local-vs-remote-server) |
 | `/postman:use-remote [mode]` | Switch this plugin's server back to the hosted server (OAuth) — see [Local vs. remote](#local-vs-remote-server) |
 
-> `/postman:learn` needs the **Learn** endpoint (`mcp.postman.com/learn`) or the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` needs the Postman CLI installed. The `code` toolset powers richer client-code generation.
+> `/postman:learn` needs the **Learn** endpoint (`mcp.postman.com/learn`) or the **Full** endpoint (`mcp.postman.com/mcp`) — `searchLearningCenter` isn't exposed in the default minimal mode. `/postman:send-request` and the four Flow commands (`/postman:list-flows`, `/postman:trigger-flow`, `/postman:deploy-flow`, `/postman:get-flow-run`) drive the **Postman CLI** and need it installed and `postman login` active — they work with any MCP mode. The `code` toolset powers richer client-code generation.
 
 Agent guidance (collection-schema rules, workflow patterns, troubleshooting) is loaded on demand from `skills/postman/SKILL.md`.
 

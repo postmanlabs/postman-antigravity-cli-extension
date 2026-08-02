@@ -1,5 +1,5 @@
 {
   "name": "postman",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Connect Antigravity to Postman — manage collections, workspaces, environments, and run API tests through natural language."
 }
