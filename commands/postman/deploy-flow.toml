@@ -1,0 +1,33 @@
+description = "Deploy a Postman Flow so it becomes triggerable, using the Postman CLI. Proposes a trigger path and confirms before the (mutating) deploy. Usage: /postman:deploy-flow <flow name or 24-char ID>"
+
+prompt = """
+Deploy a Postman Flow so it can be triggered by URL, using the Postman CLI (`postman`). Requires the Postman CLI to be installed and available on PATH, with an active `postman login` session. Deploying is a mutating action — propose a trigger path and confirm it before running the deploy.
+
+Flow (a 24-character ID, or a name to resolve) and optionally a desired trigger path: {{args}}
+
+## Step 1: Resolve the Flow
+If given a name, resolve it to its 24-character ID with /postman:list-flows (`postman flows list --workspace <workspaceId> --filter "<name>"`). Ask for the workspace if it's unknown. Never guess on multiple matches — present the candidates and ask.
+
+## Step 2: Propose and Confirm the Trigger Path
+Derive a trigger path from the flow name (e.g. "Checkout" → `/checkout`) and **confirm both the path and the deploy action** with the user. Deploy is mutating and MUST NOT run without explicit confirmation.
+
+## Step 3: Deploy
+Show the command, then run it only after confirmation:
+```bash
+POSTMAN_CLI_SOURCE=antigravity-cli-extension postman flows deploy <flowId> --path /checkout
+```
+
+## Step 4: Report
+Report the **Trigger URL** and whether the **trigger is enabled**. If it's off, offer to enable it (confirm first):
+```bash
+POSTMAN_CLI_SOURCE=antigravity-cli-extension postman flows update <flowId> --trigger on
+```
+If this was part of a deploy-then-trigger request, hand back to /postman:trigger-flow.
+
+Always prefix CLI calls with `POSTMAN_CLI_SOURCE=antigravity-cli-extension`. Reuse the existing `postman login` credentials — never authenticate twice.
+
+## Error Handling
+- **Postman CLI not installed / not on PATH:** "This command needs the Postman CLI. Install it (https://learning.postman.com/docs/postman-cli/postman-cli-installation/) and run `postman login`, then retry."
+- **Not logged in:** "Run `postman login` first, then retry."
+- **Flow not found:** List candidates via /postman:list-flows and ask the user to pick.
+"""

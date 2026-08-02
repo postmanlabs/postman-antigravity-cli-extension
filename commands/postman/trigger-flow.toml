@@ -1,0 +1,38 @@
+description = "Trigger (run) a deployed Postman Flow with inputs, using the Postman CLI. Offers to deploy-then-trigger if it isn't deployed yet. Usage: /postman:trigger-flow <flow name or 24-char ID> [inputs]"
+
+prompt = """
+Trigger a deployed Postman Flow from natural language, using the Postman CLI (`postman`). Requires the Postman CLI to be installed and available on PATH, with an active `postman login` session.
+
+Flow (a 24-character ID, or a name to resolve) plus any inputs / query params / headers / scenario: {{args}}
+
+## Step 1: Resolve the Flow
+If given a name, resolve it to a 24-character ID via /postman:list-flows (`postman flows list --workspace <workspaceId> --filter "<name>"`); disambiguate multiple matches; ask for the workspace if a name needs resolving and you don't have it.
+
+## Step 2: Build the Flags
+Translate the natural-language inputs into flags:
+- `-i k=v` for inputs
+- `-q k=v` for query params
+- `--headers k=v` for headers
+- `-s "<scenario>"` for a scenario
+
+## Step 3: Trigger
+Show the command, then run it:
+```bash
+POSTMAN_CLI_SOURCE=antigravity-cli-extension postman flows trigger <flowId> -i amount=4200
+```
+
+## Step 4: Report
+Report the **Run ID**, the **HTTP status**, and the **response body**.
+
+## Step 5: Handle Not-Deployed / Disabled / Failures
+- **Not deployed** → explain and offer to deploy via /postman:deploy-flow (explicit confirmation required), then re-trigger.
+- **Trigger disabled** → offer `postman flows update <flowId> --trigger on` (confirm first), then trigger.
+- **Non-2xx response** → surface the status + body and offer /postman:get-flow-run <run-id> for per-block detail.
+
+Always prefix CLI calls with `POSTMAN_CLI_SOURCE=antigravity-cli-extension`. Reuse the existing `postman login` credentials — never authenticate twice. Confirm before any mutating action (deploy, enable trigger).
+
+## Error Handling
+- **Postman CLI not installed / not on PATH:** "This command needs the Postman CLI. Install it (https://learning.postman.com/docs/postman-cli/postman-cli-installation/) and run `postman login`, then retry."
+- **Not logged in:** "Run `postman login` first, then retry."
+- **Flow not found:** List candidates via /postman:list-flows and ask the user to pick.
+"""
