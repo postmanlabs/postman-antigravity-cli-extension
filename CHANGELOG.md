@@ -5,7 +5,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.1.0] - 2026-08-02
 
-Aligns the plugin to the canonical **17-command** set shared with the Postman
+Aligns the plugin to the canonical **18-command** set shared with the Postman
 Claude Code and Cursor plugins (cross-plugin command parity).
 
 ### Changed
@@ -22,6 +22,11 @@ Claude Code and Cursor plugins (cross-plugin command parity).
   CLI (`postman flows ...`) via Bash and require the Postman CLI to be installed
   and `postman login` to be active — the same dependency as
   `/postman:send-request` (they are independent of the MCP endpoint/mode).
+- `/postman:generate-client` — generate typed client **code** from a Postman
+  collection (the inverse of `/postman:generate-spec`). MCP-tool-driven; the
+  codegen tools (`getCodeGenerationInstructions` and the detailed
+  `getCollection*` tools) require **Code** (`mcp.postman.com/code`) or **Full**
+  (`mcp.postman.com/mcp`) mode — switch with `/postman:use-remote code`.
 
 ## [1.0.0] - 2026-08-02
 
